@@ -47,9 +47,29 @@ def register_user():
         db.session.commit()
 
         flash(f'Added {username}!', 'success')
-        return redirect('/')
+        return redirect('/secret')
     else:
         return render_template('register.html', form=form)
+    
+@app.route('/login', methods=['GET','POST'])
+def user_login():
+    """User login form; handle login"""
+    
+    form = RegisterUser()
+
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+
+        flash(f'Welcome back {username}!', 'success')
+        return redirect('/secret')
+    else:
+        return render_template('login.html', form=form)
+    
+@app.route('/secret')
+def show_secret():
+    """Shows secret page after users are authenticated"""
+    return "You Made it!"
 
 
 
