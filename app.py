@@ -41,10 +41,11 @@ def register_user():
         first_name = form.first_name.data
         last_name = form.last_name.data
 
-        new_user = User(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
+        user = User.register(username, password, email, first_name, last_name)
         
-        db.session.add(new_user)
+        db.session.add(user)
         db.session.commit()
+        session['user_id'] = user.id
 
         flash(f'Added {username}!', 'success')
         return redirect('/secret')
@@ -61,8 +62,16 @@ def user_login():
         username = form.username.data
         password = form.password.data
 
-        flash(f'Welcome back {username}!', 'success')
-        return redirect('/secret')
+        user = User.authenticate(username, password)
+
+        if user:
+            session['user_id'] = user.id
+            flash(f'Welcome Back {username}!')
+            return redirect('/secret')
+        else:
+            form.username.errors = ["Invalid username/password."]
+            return render_template('/login', form=form)
+
     else:
         return render_template('login.html', form=form)
     
