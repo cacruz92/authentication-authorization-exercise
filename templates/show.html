@@ -9,6 +9,17 @@
 <h4>Username: {{user.username}}</h4>
 <h4>Name: {{user.first_name}} {{user.last_name}}</h4>
 <h4>Email Address: {{user.email}}</h4>
+<hr>
+
+<h1>Feedback:</h1>
+<ul id="feedback-list">
+    {% for item in feedback %}
+    <li>
+        <a href="">{{item.title}}</a> - 
+        <button class="delete-feedback" data-id="{{item.id}}">X</button>
+    </li>
+    {% endfor %}
+</ul>
 
  <form action="/users/{{user.username}}/feedback/new">
     <Button>Add Feedback!</Button>

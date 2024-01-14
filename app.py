@@ -78,8 +78,9 @@ def show_user(username):
         return render_template("noshow.html")
     
     else:
-        user = User.query.filter_by(username=username).first()   
-        return render_template("show.html", user=user)
+        user = User.query.filter_by(username=username).first() 
+        feedback = Feedback.query.all()  
+        return render_template("show.html", user=user, feedback=feedback)
         
         
 @app.route('/logout')
