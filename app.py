@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, session
-from models import User, db, connect_db
-from forms import RegisterUser, LoginForm
+from models import User, Feedback, db, connect_db
+from forms import RegisterUser, LoginForm, FeedbackForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -18,7 +18,7 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 connect_db(app)
 
 with app.app_context():
-        db.drop_all()
+        # db.drop_all()
         db.create_all()
 
 
@@ -88,6 +88,32 @@ def logout():
 
     session.pop("username")
     return redirect("/login")
+
+
+@app.route('/users/<username>/feedback/new', methods=['GET','POST'])
+def new_feedback(username):
+    """Show new feedback form & handle adding feedback"""
+
+    if "username" not in session or username != session['username']:
+        return render_template("noshow.html")
+    
+    form = FeedbackForm()
+    user = User.query.filter_by(username=username).first() 
+
+    if form.validate_on_submit():
+        title = form.title.data
+        content = form.content.data
+        
+
+        feedback = Feedback(title=title, content=content, user_id=user.id)
+
+        db.session.add(feedback)
+        db.session.commit()
+
+        return redirect(f'/users/{user.username}')
+    
+    else:
+        return render_template("newfeedback.html", form=form, user=user)
 
 if __name__ == '__main__':
     app.run(debug=True)
