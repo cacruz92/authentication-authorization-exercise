@@ -1,6 +1,6 @@
-from flask import Flask, render_template, redirect, session, flash
+from flask import Flask, render_template, redirect, session
 from models import User, db, connect_db
-from forms import RegisterUser
+from forms import RegisterUser, LoginForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -20,8 +20,6 @@ connect_db(app)
 with app.app_context():
         db.drop_all()
         db.create_all()
-
-
 
 
 @app.route('/')
@@ -45,18 +43,17 @@ def register_user():
         
         db.session.add(user)
         db.session.commit()
-        session['user_id'] = user.id
+        session['username'] = user.username
 
-        flash(f'Added {username}!', 'success')
-        return redirect('/secret')
+        return redirect(f'/users/{user.username}')
     else:
         return render_template('register.html', form=form)
     
 @app.route('/login', methods=['GET','POST'])
-def user_login():
+def login():
     """User login form; handle login"""
     
-    form = RegisterUser()
+    form = LoginForm()
 
     if form.validate_on_submit():
         username = form.username.data
@@ -65,23 +62,32 @@ def user_login():
         user = User.authenticate(username, password)
 
         if user:
-            session['user_id'] = user.id
-            flash(f'Welcome Back {username}!')
-            return redirect('/secret')
+            session['username'] = user.username
+            return redirect(f'/users/{user.username}')
         else:
             form.username.errors = ["Invalid username/password."]
-            return render_template('/login', form=form)
+            return render_template('login.html', form=form)
 
     else:
         return render_template('login.html', form=form)
     
-@app.route('/secret')
-def show_secret():
-    """Shows secret page after users are authenticated"""
-    return "You Made it!"
+@app.route('/users/<username>')
+def show_user(username): 
+    """Shows page after users are authenticated"""
+    if "username" not in session or username != session['username']:
+        return render_template("noshow.html")
+    
+    else:
+        user = User.query.filter_by(username=username).first()   
+        return render_template("show.html", user=user)
+        
+        
+@app.route('/logout')
+def logout():
+    """Log out route."""
 
-
-
+    session.pop("username")
+    return redirect("/login")
 
 if __name__ == '__main__':
     app.run(debug=True)

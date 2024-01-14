@@ -21,7 +21,7 @@ class User(db.Model):
     last_name = db.Column(db.String(30), nullable=False)
 
     @classmethod
-    def register(cls, username, password, first_name, last_name, email):
+    def register(cls, username, pwd, first_name, last_name, email):
         """Register user with hashed password & return user."""
 
         hashed = bcrypt.generate_password_hash(pwd)
@@ -32,7 +32,7 @@ class User(db.Model):
         return user
     
     @classmethod
-    def authenticate(cls, username, pwd)
+    def authenticate(cls, username, pwd):
         """Validated that the user exists & password is correct. Return user if valid; else return False."""
 
         user = User.query.filter_by(username=username).first()
