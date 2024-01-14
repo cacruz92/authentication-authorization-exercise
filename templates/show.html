@@ -21,12 +21,16 @@
     {% endfor %}
 </ul>
 
- <form action="/users/{{user.username}}/feedback/new">
+ <form action="/users/{{user.username}}/feedback/add">
     <Button>Add Feedback!</Button>
  </form>
 
 <form action="/logout">
     <button>Logout!</button>
+</form>
+
+<form action="/users/{{user.username}}/delete" method="POST">
+    <button>Delete User!</button>
 </form>
 
 {% endblock %}

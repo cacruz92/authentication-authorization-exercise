@@ -24,7 +24,7 @@ with app.app_context():
 
 @app.route('/')
 def show_homepage():
-    return redirect('/register')
+    return redirect('/login')
 
 @app.route('/register', methods=['GET','POST'])
 def register_user():
@@ -81,7 +81,23 @@ def show_user(username):
         user = User.query.filter_by(username=username).first() 
         feedback = Feedback.query.all()  
         return render_template("show.html", user=user, feedback=feedback)
-        
+    
+@app.route('/users/<username>/delete', methods=['POST'])
+def delete_user(username):
+    """Deletes user from table and logs you out. Redirects to login page."""
+
+    if "username" not in session or username != session['username']:
+        return render_template("noshow.html")
+
+    user = User.query.filter_by(username=username).first()
+    
+    Feedback.query.filter_by(user_id=user.id).delete()
+
+    db.session.delete(user)
+    db.session.commit()
+    session.pop("username")
+
+    return redirect('/login')        
         
 @app.route('/logout')
 def logout():
@@ -91,7 +107,7 @@ def logout():
     return redirect("/login")
 
 
-@app.route('/users/<username>/feedback/new', methods=['GET','POST'])
+@app.route('/users/<username>/feedback/add', methods=['GET','POST'])
 def new_feedback(username):
     """Show new feedback form & handle adding feedback"""
 
