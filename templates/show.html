@@ -15,7 +15,7 @@
 <ul id="feedback-list">
     {% for item in feedback %}
     <li>
-        <a href="">{{item.title}}</a> - 
+        <a href="/feedback/{{item.id}}">{{item.title}}</a> - 
         <button class="delete-feedback" data-id="{{item.id}}">X</button>
     </li>
     {% endfor %}

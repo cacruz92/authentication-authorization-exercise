@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, session
 from models import User, Feedback, db, connect_db
-from forms import RegisterUser, LoginForm, FeedbackForm
+from forms import RegisterUser, LoginForm, FeedbackForm, DeleteForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -24,7 +24,13 @@ with app.app_context():
 
 @app.route('/')
 def show_homepage():
-    return redirect('/login')
+    if "username" not in session:
+        return redirect('/login')
+    else:
+        username = session['username']
+        return redirect(f'/users/{username}')
+
+
 
 @app.route('/register', methods=['GET','POST'])
 def register_user():
@@ -49,6 +55,8 @@ def register_user():
     else:
         return render_template('register.html', form=form)
     
+
+
 @app.route('/login', methods=['GET','POST'])
 def login():
     """User login form; handle login"""
@@ -70,7 +78,9 @@ def login():
 
     else:
         return render_template('login.html', form=form)
-    
+
+
+
 @app.route('/users/<username>')
 def show_user(username): 
     """Shows page after users are authenticated"""
@@ -82,6 +92,8 @@ def show_user(username):
         feedback = Feedback.query.all()  
         return render_template("show.html", user=user, feedback=feedback)
     
+
+
 @app.route('/users/<username>/delete', methods=['POST'])
 def delete_user(username):
     """Deletes user from table and logs you out. Redirects to login page."""
@@ -105,6 +117,56 @@ def logout():
 
     session.pop("username")
     return redirect("/login")
+
+
+
+@app.route('/feedback/<feedback_id>')
+def show_feedback_page(feedback_id):
+    feedback = Feedback.query.get(feedback_id)
+    return render_template('showfeedback.html', feedback=feedback)
+
+
+
+@app.route('/feedback/<feedback_id>/delete', methods=['POST'])
+def delete_feedback(feedback_id):
+    """Delete feedback."""
+
+    feedback = Feedback.query.get(feedback_id)
+    if "username" not in session or feedback.user.username != session['username']:
+        return render_template('noshow.html')
+
+    form = DeleteForm()
+
+    if form.validate_on_submit():
+        db.session.delete(feedback)
+        db.session.commit()
+
+    return redirect(f"/users/{feedback.user.username}")
+    
+
+    
+
+
+
+@app.route('/feedback/<feedback_id>/update', methods=['GET', 'POST'])
+def show_feedback_update_page(feedback_id):
+    feedback = Feedback.query.get(feedback_id)
+    
+    if 'username' not in session or feedback.user.username != session['username']:
+        return render_template('noshow.html')
+    
+    form = FeedbackForm(obj=feedback)
+
+    if form.validate_on_submit():
+        feedback.title = form.title.data
+        feedback.content = form.content.data
+
+        db.session.commit()
+        
+        return redirect(f'/users/{feedback.user.username}')
+    else:
+        return render_template('updatefeedback.html', form=form, feedback=feedback)
+
 
 
 @app.route('/users/<username>/feedback/add', methods=['GET','POST'])

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{feedback.title}}
+{% endblock %}
+
+{% block content %}
+
+<h3>{{feedback.title}}:</h3>
+<br>
+<p>{{feedback.content}}</p>
+<br>
+<sub><i>Submitted by: {{feedback.user.username}}</i></sub>
+
+<form action="/feedback/{{feedback.id}}/update">
+    <button>Update Feedback</button>
+</form>
+
+<form action="/feedback/{{feedback.id}}/delete" method="POST">
+    <button>Delete Feedback</button>
+</form>
+
+{% endblock %}
